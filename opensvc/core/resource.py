@@ -386,7 +386,6 @@ class Resource(object):
                 header = ""
             self.log.info("%s%s %s", header, action, self.label)
             return
-        self.set_stopped_flag(action)
         getattr(self, action)()
 
     def do_action(self, action):
@@ -407,12 +406,14 @@ class Resource(object):
         if action == "stop" and self.is_standby and not self.svc.options.force:
             standby_action = action+'standby'
             if hasattr(self, standby_action):
+                self.set_stopped_flag(action)
                 self.action_main(standby_action)
                 return
             else:
                 self.log.info("skip '%s' on standby resource (--force to override)", action)
                 return
 
+        self.set_stopped_flag(action)
         self.check_requires(action)
         self.handle_confirm(action)
         self.setup_environ()
