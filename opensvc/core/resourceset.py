@@ -276,6 +276,9 @@ class ResourceSet(object):
         xtypes = kwargs.get("xtypes")
         types = kwargs.get("types")
         resources = self.action_resources(action, tags, xtags, xtypes, types)
+        if not self.svc.command_is_scoped() or action in ["start", "startstandby"]:
+            for resource in resources:
+                resource.clear_stopped()
         resources = [r for r in resources if not r.skip and not r.is_disabled() and (action != "rollback" or r.can_rollback)]
         barrier = None
 
