@@ -3730,7 +3730,12 @@ class Svc(PgMixin, BaseSvc):
             results = self.vcall(trigger)
             if results[0] != 0:
                 raise ex.Error(results[2])
-
+        # early clear stopped flag
+        if not self.command_is_scoped() or action in ["start", "startstandby"]:
+            for rset in rsets:
+                resources = rset.action_resources(action, types=_type, tags=tags, xtags=xtags, xtypes=None)
+                for resource in resources:
+                    resource.clear_stopped()
         need_snap = self.need_snap_trigger(rsets, action)
 
         # snapshots are created in pre_action and destroyed in post_action
